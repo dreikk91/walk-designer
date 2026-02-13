@@ -10,6 +10,7 @@ import (
 
 func main() {
 	mw := new(ui.DesignerWindow)
+	mw.NewProject()
 
 	if err := (MainWindow{
 		AssignTo: &mw.MainWindow,

@@ -81,6 +81,9 @@ func (m *ObjectModel) RootAt(index int) walk.TreeItem {
 }
 
 func (m *ObjectModel) fillChildren(item *ObjectItem) {
+	if m.mw.Project == nil {
+		return
+	}
 	parentID := ""
 	if item.Component != nil {
 		parentID = item.Component.ID
