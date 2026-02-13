@@ -149,7 +149,7 @@ func (cw *CanvasWidget) getHandles(c *models.Component, size int) []walk.Rectang
 }
 
 func (cw *CanvasWidget) onMouseDown(x, y int, button walk.MouseButton) {
-	if button != walk.LeftButton {
+	if button != walk.LeftButton || cw.mw.Project == nil {
 		return
 	}
 
@@ -296,7 +296,7 @@ func (cw *CanvasWidget) isContainer(typ string) bool {
 }
 
 func (cw *CanvasWidget) parentHasLayout(c *models.Component) bool {
-	if c.ParentID == "" { return false }
+	if c.ParentID == "" || cw.mw.Project == nil { return false }
 	for _, p := range cw.mw.Project.Components {
 		if p.ID == c.ParentID {
 			return p.Layout != models.LayoutNone
