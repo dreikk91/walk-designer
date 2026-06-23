@@ -54,6 +54,8 @@ type Component struct {
 	TabPages    []TabPageConfig `json:"tab_pages,omitempty"`
 	Orientation string          `json:"orientation,omitempty"`
 	IsPassword  bool            `json:"is_password,omitempty"`
+	ToolTip     string          `json:"tool_tip,omitempty"`
+	ImagePath   string          `json:"image_path,omitempty"`
 
 	Children    []*Component    `json:"children,omitempty"` // For tree representation
 }

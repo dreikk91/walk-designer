@@ -130,6 +130,49 @@ func (cw *CanvasWidget) drawComponent(canvas *walk.Canvas, c *models.Component) 
 		canvas.GradientFillRectanglePixels(walk.RGB(252, 252, 252), walk.RGB(232, 232, 232), walk.Vertical, rect)
 		canvas.DrawRectanglePixels(borderPen, rect)
 		canvas.DrawTextPixels(displayText, font, walk.RGB(20, 20, 20), rect, walk.TextCenter|walk.TextVCenter|walk.TextSingleLine)
+	case "SplitButton":
+		canvas.GradientFillRectanglePixels(walk.RGB(252, 252, 252), walk.RGB(232, 232, 232), walk.Vertical, rect)
+		canvas.DrawRectanglePixels(borderPen, rect)
+
+		arrowW, _ := cw.fromLogical(16, 16)
+		if rect.Width > arrowW {
+			canvas.DrawLinePixels(borderPen, walk.Point{X: rect.X + rect.Width - arrowW, Y: rect.Y}, walk.Point{X: rect.X + rect.Width - arrowW, Y: rect.Y + rect.Height})
+			textRect := walk.Rectangle{X: rect.X, Y: rect.Y, Width: rect.Width - arrowW, Height: rect.Height}
+			canvas.DrawTextPixels(displayText, font, walk.RGB(20, 20, 20), textRect, walk.TextCenter|walk.TextVCenter|walk.TextSingleLine)
+
+			// Draw arrow
+			ax := rect.X + rect.Width - arrowW/2
+			ay := rect.Y + rect.Height/2
+			canvas.DrawLinePixels(borderPen, walk.Point{X: ax - 3, Y: ay - 1}, walk.Point{X: ax + 3, Y: ay - 1})
+			canvas.DrawLinePixels(borderPen, walk.Point{X: ax - 2, Y: ay}, walk.Point{X: ax + 2, Y: ay})
+			canvas.DrawLinePixels(borderPen, walk.Point{X: ax - 1, Y: ay + 1}, walk.Point{X: ax + 1, Y: ay + 1})
+			canvas.DrawLinePixels(borderPen, walk.Point{X: ax, Y: ay + 2}, walk.Point{X: ax, Y: ay + 2})
+		} else {
+			canvas.DrawTextPixels(displayText, font, walk.RGB(20, 20, 20), rect, walk.TextCenter|walk.TextVCenter|walk.TextSingleLine)
+		}
+	case "LinkLabel":
+		canvas.DrawTextPixels(displayText, font, walk.RGB(0, 102, 204), rect, walk.TextVCenter|walk.TextSingleLine)
+		// simple underline simulation for link
+		canvas.DrawLinePixels(bluePen, walk.Point{X: rect.X, Y: rect.Y + rect.Height - 4}, walk.Point{X: rect.X + rect.Width, Y: rect.Y + rect.Height - 4})
+	case "ImageView":
+		fillRect(rect, walk.RGB(240, 240, 240))
+		canvas.DrawRectanglePixels(borderPen, rect)
+		canvas.DrawLinePixels(lightPen, walk.Point{X: rect.X, Y: rect.Y}, walk.Point{X: rect.X + rect.Width, Y: rect.Y + rect.Height})
+		canvas.DrawLinePixels(lightPen, walk.Point{X: rect.X + rect.Width, Y: rect.Y}, walk.Point{X: rect.X, Y: rect.Y + rect.Height})
+		canvas.DrawTextPixels("Image", font, walk.RGB(100, 100, 100), rect, walk.TextCenter|walk.TextVCenter|walk.TextSingleLine)
+	case "ToolBar":
+		canvas.GradientFillRectanglePixels(walk.RGB(245, 245, 245), walk.RGB(230, 230, 230), walk.Vertical, rect)
+		canvas.DrawRectanglePixels(borderPen, rect)
+		// Draw some fake buttons
+		bw, _ := cw.fromLogical(24, 24)
+		for i := 0; i < 3 && rect.X+6+i*(bw+4)+bw <= rect.X+rect.Width; i++ {
+			br := walk.Rectangle{X: rect.X + 6 + i*(bw + 4), Y: rect.Y + 3, Width: bw, Height: rect.Height - 6}
+			canvas.DrawRectanglePixels(lightPen, br)
+		}
+	case "StatusBar":
+		canvas.GradientFillRectanglePixels(walk.RGB(240, 240, 240), walk.RGB(220, 220, 220), walk.Vertical, rect)
+		canvas.DrawRectanglePixels(borderPen, rect)
+		canvas.DrawTextPixels("Ready", font, walk.RGB(60, 60, 60), walk.Rectangle{X: rect.X + 6, Y: rect.Y, Width: rect.Width - 12, Height: rect.Height}, walk.TextVCenter|walk.TextSingleLine)
 	case "LineEdit", "TextEdit", "NumberEdit", "DateEdit":
 		fillRect(rect, walk.RGB(255, 255, 255))
 		canvas.DrawRectanglePixels(borderPen, rect)
@@ -216,6 +259,23 @@ func (cw *CanvasWidget) drawComponent(canvas *walk.Canvas, c *models.Component) 
 		canvas.GradientFillRectanglePixels(walk.RGB(255, 255, 255), walk.RGB(237, 237, 237), walk.Vertical, tab)
 		canvas.DrawRectanglePixels(borderPen, tab)
 		canvas.DrawTextPixels("Tab 1", font, walk.RGB(30, 30, 30), tab, walk.TextCenter|walk.TextVCenter|walk.TextSingleLine)
+	case "ScrollView":
+		fillRect(rect, walk.RGB(255, 255, 255))
+		canvas.DrawRectanglePixels(borderPen, rect)
+		// Draw fake scrollbars
+		sbW, _ := cw.fromLogical(16, 16)
+		if rect.Width > sbW && rect.Height > sbW {
+			vsb := walk.Rectangle{X: rect.X + rect.Width - sbW, Y: rect.Y, Width: sbW, Height: rect.Height - sbW}
+			hsb := walk.Rectangle{X: rect.X, Y: rect.Y + rect.Height - sbW, Width: rect.Width - sbW, Height: sbW}
+			corner := walk.Rectangle{X: rect.X + rect.Width - sbW, Y: rect.Y + rect.Height - sbW, Width: sbW, Height: sbW}
+
+			canvas.GradientFillRectanglePixels(walk.RGB(240, 240, 240), walk.RGB(220, 220, 220), walk.Horizontal, vsb)
+			canvas.GradientFillRectanglePixels(walk.RGB(240, 240, 240), walk.RGB(220, 220, 220), walk.Vertical, hsb)
+			fillRect(corner, walk.RGB(240, 240, 240))
+			canvas.DrawRectanglePixels(lightPen, vsb)
+			canvas.DrawRectanglePixels(lightPen, hsb)
+		}
+		canvas.DrawTextPixels(c.Type, font, walk.RGB(150, 150, 150), rect, walk.TextCenter|walk.TextVCenter|walk.TextSingleLine)
 	case "Composite", "Splitter":
 		fillRect(rect, walk.RGB(247, 247, 247))
 		canvas.DrawRectanglePixels(borderPen, rect)
@@ -411,7 +471,7 @@ func (cw *CanvasWidget) onMouseUp(x, y int, button walk.MouseButton) {
 
 func (cw *CanvasWidget) isContainer(typ string) bool {
 	switch typ {
-	case "Composite", "GroupBox", "Splitter", "TabWidget": return true
+	case "Composite", "GroupBox", "Splitter", "TabWidget", "ScrollView": return true
 	}
 	return false
 }

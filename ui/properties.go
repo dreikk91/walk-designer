@@ -14,6 +14,11 @@ type PropertyEditorWidget struct {
 
 	// Custom fields that might need manual handling
 	itemsEdit      *walk.TextEdit
+	layoutType     *walk.ComboBox
+	layoutMargins  *walk.NumberEdit
+	layoutSpacing  *walk.NumberEdit
+	marginsZero    *walk.CheckBox
+	spacingZero    *walk.CheckBox
 }
 
 func CreatePropertyEditor(mw *DesignerWindow) Widget {
@@ -54,6 +59,7 @@ func CreatePropertyEditor(mw *DesignerWindow) Widget {
 						Children: []Widget{
 							Label{Text: "Name:"}, LineEdit{Text: Bind("c.Name")},
 							Label{Text: "Text:"}, LineEdit{Text: Bind("c.Text")},
+							Label{Text: "ToolTip:"}, LineEdit{Text: Bind("c.ToolTip")},
 							Label{Text: "X:"}, NumberEdit{Value: Bind("c.X")},
 							Label{Text: "Y:"}, NumberEdit{Value: Bind("c.Y")},
 							Label{Text: "Width:"}, NumberEdit{Value: Bind("c.Width")},
@@ -78,6 +84,7 @@ func CreatePropertyEditor(mw *DesignerWindow) Widget {
 								Model: []string{"Horizontal", "Vertical"},
 								Value: Bind("c.Orientation"),
 							},
+							Label{Text: "ImagePath:"}, LineEdit{Text: Bind("c.ImagePath")},
 						},
 					},
 
@@ -109,13 +116,14 @@ func CreatePropertyEditor(mw *DesignerWindow) Widget {
 						Children: []Widget{
 							Label{Text: "Layout Type:"},
 							ComboBox{
+								AssignTo: &pe.layoutType,
 								Model: []string{"None", "HBox", "VBox", "Grid"},
-								OnCurrentIndexChanged: func() {
-									// We'll handle this manually if needed
-								},
-								// Direct binding to pointer fields might be tricky
 							},
-							Label{Text: "Columns:"}, NumberEdit{Value: Bind("c.ColumnSpan")}, // Using ColumnSpan as a proxy for Grid columns if needed, or we'll handle Layout pointer manually
+							Label{Text: "Columns:"}, NumberEdit{Value: Bind("c.ColumnSpan")},
+							Label{Text: "Margins:"}, NumberEdit{AssignTo: &pe.layoutMargins},
+							Label{Text: "Spacing:"}, NumberEdit{AssignTo: &pe.layoutSpacing},
+							Label{Text: "Margins Zero:"}, CheckBox{AssignTo: &pe.marginsZero},
+							Label{Text: "Spacing Zero:"}, CheckBox{AssignTo: &pe.spacingZero},
 						},
 					},
 
@@ -126,10 +134,19 @@ func CreatePropertyEditor(mw *DesignerWindow) Widget {
 							// Manual sync for Layout since it's a pointer
 							c := mw.SelectedComponent
 							if c != nil {
-								if c.Layout == nil {
-									c.Layout = &models.LayoutConfig{}
+								lt := models.LayoutType(pe.layoutType.Text())
+								if lt != models.LayoutNone && lt != "" {
+									if c.Layout == nil {
+										c.Layout = &models.LayoutConfig{}
+									}
+									c.Layout.Type = lt
+									c.Layout.Margins = int(pe.layoutMargins.Value())
+									c.Layout.Spacing = int(pe.layoutSpacing.Value())
+									c.Layout.MarginsZero = pe.marginsZero.Checked()
+									c.Layout.SpacingZero = pe.spacingZero.Checked()
+								} else {
+									c.Layout = nil
 								}
-								// Further manual sync if needed
 							}
 							mw.RefreshAll()
 						},
@@ -149,7 +166,7 @@ func (pe *PropertyEditorWidget) Update() {
 	pe.SetVisible(true)
 
 	// Ensure Layout exists for binding if we were to bind to it
-	if (c.Type == "Composite" || c.Type == "GroupBox" || c.Type == "Splitter") && c.Layout == nil {
+	if (c.Type == "Composite" || c.Type == "GroupBox" || c.Type == "Splitter" || c.Type == "ScrollView") && c.Layout == nil {
 		c.Layout = &models.LayoutConfig{Type: models.LayoutVBox}
 	}
 
@@ -160,5 +177,19 @@ func (pe *PropertyEditorWidget) Update() {
 		pe.itemsEdit.SetText(strings.Join(c.Items, "\n"))
 	} else {
 		pe.itemsEdit.SetText("")
+	}
+
+	if c.Layout != nil {
+		pe.layoutType.SetText(string(c.Layout.Type))
+		pe.layoutMargins.SetValue(float64(c.Layout.Margins))
+		pe.layoutSpacing.SetValue(float64(c.Layout.Spacing))
+		pe.marginsZero.SetChecked(c.Layout.MarginsZero)
+		pe.spacingZero.SetChecked(c.Layout.SpacingZero)
+	} else {
+		pe.layoutType.SetText("None")
+		pe.layoutMargins.SetValue(0)
+		pe.layoutSpacing.SetValue(0)
+		pe.marginsZero.SetChecked(false)
+		pe.spacingZero.SetChecked(false)
 	}
 }
