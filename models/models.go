@@ -81,6 +81,12 @@ type Component struct {
 	Marquee     bool            `json:"marquee,omitempty"`
 	ImageMode   string          `json:"image_mode,omitempty"` // e.g. "Ideal", "Stretch", "Zoom"
 
+	// Constraints
+	MinWidth    int             `json:"min_width,omitempty"`
+	MinHeight   int             `json:"min_height,omitempty"`
+	MaxWidth    int             `json:"max_width,omitempty"`
+	MaxHeight   int             `json:"max_height,omitempty"`
+
 	Children    []*Component    `json:"children,omitempty"` // For tree representation
 }
 

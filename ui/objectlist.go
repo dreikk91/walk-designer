@@ -29,7 +29,52 @@ func CreateObjectList(mw *DesignerWindow) Widget {
 }
 
 func (ol *ObjectListWidget) Refresh() {
+	// For robustness with lxn/walk, simply expanding all after reset is often easier,
+	// but let's try to restore the selected item.
+
 	ol.model.PublishItemsReset(nil)
+
+	// Expand the root by default
+	if ol.model.RootCount() > 0 {
+		root := ol.model.RootAt(0)
+		ol.TreeView.SetExpanded(root, true)
+
+		// Expand all recursively for better UX in small hierarchies
+		var expandAll func(item walk.TreeItem)
+		expandAll = func(item walk.TreeItem) {
+			if item == nil { return }
+			ol.TreeView.SetExpanded(item, true)
+			count := ol.model.ChildCount(item)
+			for i := 0; i < count; i++ {
+				expandAll(ol.model.ChildAt(item, i))
+			}
+		}
+		expandAll(root)
+
+		// Select the currently selected component
+		selComp := ol.mw.SelectedComponent
+		if selComp != nil {
+			var findItem func(item walk.TreeItem) walk.TreeItem
+			findItem = func(item walk.TreeItem) walk.TreeItem {
+				if item == nil { return nil }
+				objItem, ok := item.(*ObjectItem)
+				if ok && objItem.Component != nil && objItem.Component.ID == selComp.ID {
+					return item
+				}
+				count := ol.model.ChildCount(item)
+				for i := 0; i < count; i++ {
+					if found := findItem(ol.model.ChildAt(item, i)); found != nil {
+						return found
+					}
+				}
+				return nil
+			}
+			found := findItem(root)
+			if found != nil {
+				ol.TreeView.SetCurrentItem(found)
+			}
+		}
+	}
 }
 
 type ObjectItem struct {
@@ -65,6 +110,21 @@ func (i *ObjectItem) Image() interface{} {
 	return nil
 }
 
+// ChildCount and ChildAt for the model
+func (m *ObjectModel) ChildCount(parent walk.TreeItem) int {
+	if obj, ok := parent.(*ObjectItem); ok {
+		return obj.ChildCount()
+	}
+	return 0
+}
+
+func (m *ObjectModel) ChildAt(parent walk.TreeItem, index int) walk.TreeItem {
+	if obj, ok := parent.(*ObjectItem); ok {
+		return obj.ChildAt(index)
+	}
+	return nil
+}
+
 type ObjectModel struct {
 	walk.TreeModelBase
 	mw *DesignerWindow
@@ -87,7 +147,7 @@ func (m *ObjectModel) RootAt(index int) walk.TreeItem {
 }
 
 func (m *ObjectModel) fillChildren(item *ObjectItem) {
-	if m.mw == nil || m.mw.Project == nil {
+	if item == nil || m.mw == nil || m.mw.Project == nil {
 		return
 	}
 	parentID := ""

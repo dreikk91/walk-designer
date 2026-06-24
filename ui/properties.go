@@ -118,6 +118,10 @@ func CreatePropertyEditor(mw *DesignerWindow) Widget {
 							Label{Text: "Y:"}, NumberEdit{Value: Bind("c.Y")},
 							Label{Text: "Width:"}, NumberEdit{Value: Bind("c.Width")},
 							Label{Text: "Height:"}, NumberEdit{Value: Bind("c.Height")},
+							Label{Text: "Min Width:"}, NumberEdit{Value: Bind("c.MinWidth")},
+							Label{Text: "Min Height:"}, NumberEdit{Value: Bind("c.MinHeight")},
+							Label{Text: "Max Width:"}, NumberEdit{Value: Bind("c.MaxWidth")},
+							Label{Text: "Max Height:"}, NumberEdit{Value: Bind("c.MaxHeight")},
 							Label{Text: "Alignment:"}, ComboBox{
 								Model: []string{"", "Left", "Center", "Right"},
 								Value: Bind("c.Alignment"),

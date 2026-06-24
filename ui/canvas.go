@@ -58,6 +58,49 @@ func CreateCanvas(mw *DesignerWindow) Widget {
 		OnMouseDown:         cw.onMouseDown,
 		OnMouseMove:         cw.onMouseMove,
 		OnMouseUp:           cw.onMouseUp,
+		ContextMenuItems: []MenuItem{
+			Action{
+				Text: "Lay Out Horizontally",
+				OnTriggered: func() {
+					if c := mw.SelectedComponent; c != nil && cw.isContainer(c.Type) {
+						if c.Layout == nil { c.Layout = &models.LayoutConfig{} }
+						c.Layout.Type = models.LayoutHBox
+						mw.RefreshAll()
+					}
+				},
+			},
+			Action{
+				Text: "Lay Out Vertically",
+				OnTriggered: func() {
+					if c := mw.SelectedComponent; c != nil && cw.isContainer(c.Type) {
+						if c.Layout == nil { c.Layout = &models.LayoutConfig{} }
+						c.Layout.Type = models.LayoutVBox
+						mw.RefreshAll()
+					}
+				},
+			},
+			Action{
+				Text: "Lay Out in a Grid",
+				OnTriggered: func() {
+					if c := mw.SelectedComponent; c != nil && cw.isContainer(c.Type) {
+						if c.Layout == nil { c.Layout = &models.LayoutConfig{} }
+						c.Layout.Type = models.LayoutGrid
+						c.Layout.Columns = 2 // default
+						mw.RefreshAll()
+					}
+				},
+			},
+			Separator{},
+			Action{
+				Text: "Break Layout",
+				OnTriggered: func() {
+					if c := mw.SelectedComponent; c != nil && cw.isContainer(c.Type) {
+						c.Layout = nil
+						mw.RefreshAll()
+					}
+				},
+			},
+		},
 	}
 }
 
@@ -338,6 +381,21 @@ func (cw *CanvasWidget) drawComponent(canvas *walk.Canvas, c *models.Component) 
 		fillRect(rect, walk.RGB(247, 247, 247))
 		canvas.DrawRectanglePixels(borderPen, rect)
 		canvas.DrawTextPixels(c.Type, font, walk.RGB(90, 90, 90), rect, walk.TextCenter|walk.TextVCenter|walk.TextSingleLine)
+	case "HSpacer":
+		cy := rect.Y + rect.Height/2
+		canvas.DrawLinePixels(bluePen, walk.Point{X: rect.X, Y: cy}, walk.Point{X: rect.X + rect.Width, Y: cy})
+		// draw spring coils
+		for sx := rect.X + 4; sx < rect.X+rect.Width-4; sx += 8 {
+			canvas.DrawLinePixels(bluePen, walk.Point{X: sx, Y: cy}, walk.Point{X: sx + 4, Y: cy - 4})
+			canvas.DrawLinePixels(bluePen, walk.Point{X: sx + 4, Y: cy - 4}, walk.Point{X: sx + 8, Y: cy})
+		}
+	case "VSpacer":
+		cx := rect.X + rect.Width/2
+		canvas.DrawLinePixels(bluePen, walk.Point{X: cx, Y: rect.Y}, walk.Point{X: cx, Y: rect.Y + rect.Height})
+		for sy := rect.Y + 4; sy < rect.Y+rect.Height-4; sy += 8 {
+			canvas.DrawLinePixels(bluePen, walk.Point{X: cx, Y: sy}, walk.Point{X: cx - 4, Y: sy + 4})
+			canvas.DrawLinePixels(bluePen, walk.Point{X: cx - 4, Y: sy + 4}, walk.Point{X: cx, Y: sy + 8})
+		}
 	default:
 		fillRect(rect, walk.RGB(240, 240, 240))
 		canvas.DrawRectanglePixels(borderPen, rect)
