@@ -77,6 +77,50 @@ func (mw *DesignerWindow) SaveProject() {
 	}
 }
 
+func (mw *DesignerWindow) ImportUI() {
+	dlg := new(walk.FileDialog)
+	dlg.Title = "Import Qt .ui File"
+	dlg.Filter = "Qt UI files (*.ui)|*.ui|All files (*.*)|*.*"
+
+	if ok, err := dlg.ShowOpen(mw); err != nil {
+		return
+	} else if !ok {
+		return
+	}
+
+	p, err := logic.ImportFromUI(dlg.FilePath)
+	if err != nil {
+		walk.MsgBox(mw, "Error", "Failed to import UI file: "+err.Error(), walk.MsgBoxIconError)
+		return
+	}
+
+	mw.Project = p
+	mw.SelectedComponent = nil
+	mw.RefreshAll()
+}
+
+func (mw *DesignerWindow) ExportUI() {
+	if mw.Project == nil {
+		return
+	}
+
+	dlg := new(walk.FileDialog)
+	dlg.Title = "Export to Qt .ui File"
+	dlg.Filter = "Qt UI files (*.ui)|*.ui|All files (*.*)|*.*"
+
+	if ok, err := dlg.ShowSave(mw); err != nil {
+		return
+	} else if !ok {
+		return
+	}
+
+	if err := logic.ExportToUI(mw.Project, dlg.FilePath); err != nil {
+		walk.MsgBox(mw, "Error", "Failed to export UI file: "+err.Error(), walk.MsgBoxIconError)
+	} else {
+		walk.MsgBox(mw, "Success", "Project successfully exported to .ui format.", walk.MsgBoxIconInformation)
+	}
+}
+
 func (mw *DesignerWindow) RefreshCanvas() {
 	if mw.Canvas != nil {
 		mw.Canvas.Invalidate()

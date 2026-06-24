@@ -38,6 +38,15 @@ func main() {
 					},
 					Separator{},
 					Action{
+						Text:        "Import .ui (Qt)...",
+						OnTriggered: mw.ImportUI,
+					},
+					Action{
+						Text:        "Export .ui (Qt)...",
+						OnTriggered: mw.ExportUI,
+					},
+					Separator{},
+					Action{
 						Text:        "E&xit",
 						OnTriggered: func() { mw.Close() },
 					},

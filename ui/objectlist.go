@@ -71,17 +71,23 @@ type ObjectModel struct {
 }
 
 func (m *ObjectModel) RootCount() int {
+	if m.mw == nil || m.mw.Project == nil {
+		return 0
+	}
 	return 1 // The Project root
 }
 
 func (m *ObjectModel) RootAt(index int) walk.TreeItem {
+	if m.mw == nil || m.mw.Project == nil {
+		return nil
+	}
 	root := &ObjectItem{Component: nil}
 	m.fillChildren(root)
 	return root
 }
 
 func (m *ObjectModel) fillChildren(item *ObjectItem) {
-	if m.mw.Project == nil {
+	if m.mw == nil || m.mw.Project == nil {
 		return
 	}
 	parentID := ""
@@ -93,7 +99,7 @@ func (m *ObjectModel) fillChildren(item *ObjectItem) {
 		if c.ParentID == parentID {
 			child := &ObjectItem{Component: c, parentItem: item}
 			item.Children = append(item.Children, child)
-			m.fillChildren(child)
+			m.fillChildren(child) // Recursively fetch children to build the hierarchy correctly
 		}
 	}
 }
