@@ -47,13 +47,22 @@ func CreateToolbox(mw *DesignerWindow) Widget {
 	basic := &ToolboxItem{text: "Basic Controls"}
 	basic.children = []*ToolboxItem{
 		{parent: basic, text: "PushButton", typ: "PushButton"},
+		{parent: basic, text: "SplitButton", typ: "SplitButton"},
 		{parent: basic, text: "Label", typ: "Label"},
+		{parent: basic, text: "LinkLabel", typ: "LinkLabel"},
+		{parent: basic, text: "ImageView", typ: "ImageView"},
 		{parent: basic, text: "LineEdit", typ: "LineEdit"},
 		{parent: basic, text: "TextEdit", typ: "TextEdit"},
 		{parent: basic, text: "CheckBox", typ: "CheckBox"},
 		{parent: basic, text: "RadioButton", typ: "RadioButton"},
 		{parent: basic, text: "ComboBox", typ: "ComboBox"},
 		{parent: basic, text: "ListBox", typ: "ListBox"},
+	}
+
+	menus := &ToolboxItem{text: "Menus & Toolbars"}
+	menus.children = []*ToolboxItem{
+		{parent: menus, text: "ToolBar", typ: "ToolBar"},
+		{parent: menus, text: "StatusBar", typ: "StatusBar"},
 	}
 
 	numeric := &ToolboxItem{text: "Numeric & Date"}
@@ -75,6 +84,7 @@ func CreateToolbox(mw *DesignerWindow) Widget {
 	containers.children = []*ToolboxItem{
 		{parent: containers, text: "GroupBox", typ: "GroupBox"},
 		{parent: containers, text: "Composite", typ: "Composite"},
+		{parent: containers, text: "ScrollView", typ: "ScrollView"},
 		{parent: containers, text: "Splitter", typ: "Splitter"},
 	}
 
@@ -84,7 +94,7 @@ func CreateToolbox(mw *DesignerWindow) Widget {
 		{parent: spacers, text: "VSpacer", typ: "VSpacer"},
 	}
 
-	model.roots = []*ToolboxItem{basic, numeric, advanced, containers, spacers}
+	model.roots = []*ToolboxItem{basic, menus, numeric, advanced, containers, spacers}
 
 	return Composite{
 		AssignTo: &tb.Composite,
@@ -142,10 +152,27 @@ func (mw *DesignerWindow) AddComponent(typ string, x, y int) *models.Component {
 	switch typ {
 	case "PushButton":
 		c.Text = "Button"
+	case "SplitButton":
+		c.Text = "SplitButton"
+		c.Width = 120
 	case "Label":
 		c.Text = "Label"
 		c.Width = 100
 		c.Height = 20
+	case "LinkLabel":
+		c.Text = `<a>Link</a>`
+		c.Width = 100
+		c.Height = 20
+	case "ImageView":
+		c.Text = "Image"
+		c.Width = 100
+		c.Height = 100
+	case "ToolBar":
+		c.Width = 300
+		c.Height = 30
+	case "StatusBar":
+		c.Width = 400
+		c.Height = 25
 	case "CheckBox":
 		c.Text = "CheckBox"
 	case "RadioButton":
@@ -176,7 +203,7 @@ func (mw *DesignerWindow) AddComponent(typ string, x, y int) *models.Component {
 		c.MaxValue = 100
 		c.Value = 50
 		c.Orientation = "Horizontal"
-	case "Composite", "GroupBox":
+	case "Composite", "GroupBox", "ScrollView":
 		c.Width = 200
 		c.Height = 150
 		c.Layout = &models.LayoutConfig{Type: models.LayoutVBox}
