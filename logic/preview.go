@@ -87,7 +87,7 @@ func createWidgets(p *models.Project, parentID string) []Widget {
 				}
 			case "TableView":
 				w = TableView{
-					Columns: createTableColumns(c.Columns),
+					Columns: createTableColumns(c.TableCols),
 				}
 			case "TreeView":
 				w = TreeView{}
@@ -138,13 +138,25 @@ func createTabPages(p *models.Project, parentID string, configs []models.TabPage
 	return pages
 }
 
-func createTableColumns(cols []string) []TableViewColumn {
+func createTableColumns(cols []models.TableColumnConfig) []TableViewColumn {
 	var tvcs []TableViewColumn
 	for _, col := range cols {
-		tvcs = append(tvcs, TableViewColumn{Title: col})
+		// Try to parse alignment, default to Near
+		align := AlignNear
+		switch col.Alignment {
+		case "Center": align = AlignCenter
+		case "Far": align = AlignFar
+		}
+
+		tvcs = append(tvcs, TableViewColumn{
+			Name: col.Name,
+			Title: col.Title,
+			Width: col.Width,
+			Alignment: align,
+		})
 	}
 	if len(tvcs) == 0 {
-		tvcs = append(tvcs, TableViewColumn{Title: "Column 1"})
+		tvcs = append(tvcs, TableViewColumn{Title: "Column 1", Width: 100})
 	}
 	return tvcs
 }

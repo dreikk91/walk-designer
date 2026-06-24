@@ -24,6 +24,22 @@ type TabPageConfig struct {
 	Children []Component   `json:"children,omitempty"`
 }
 
+type FontConfig struct {
+	Family    string `json:"family,omitempty"`
+	PointSize int    `json:"point_size,omitempty"`
+	Bold      bool   `json:"bold,omitempty"`
+	Italic    bool   `json:"italic,omitempty"`
+	Underline bool   `json:"underline,omitempty"`
+	StrikeOut bool   `json:"strike_out,omitempty"`
+}
+
+type TableColumnConfig struct {
+	Name      string `json:"name,omitempty"`
+	Title     string `json:"title,omitempty"`
+	Width     int    `json:"width,omitempty"`
+	Alignment string `json:"alignment,omitempty"` // e.g. "Near", "Center", "Far"
+}
+
 type Component struct {
 	ID          string         `json:"id"`
 	Type        string         `json:"type"`
@@ -47,7 +63,7 @@ type Component struct {
 	Checked     bool            `json:"checked,omitempty"`
 	ReadOnly    bool            `json:"read_only,omitempty"`
 	Items       []string        `json:"items,omitempty"`
-	Columns     []string        `json:"columns,omitempty"`
+	TableCols   []TableColumnConfig `json:"table_cols,omitempty"`
 	ColumnSpan  int             `json:"column_span,omitempty"`
 	RowSpan     int             `json:"row_span,omitempty"`
 	Alignment   string          `json:"alignment,omitempty"`
@@ -56,6 +72,14 @@ type Component struct {
 	IsPassword  bool            `json:"is_password,omitempty"`
 	ToolTip     string          `json:"tool_tip,omitempty"`
 	ImagePath   string          `json:"image_path,omitempty"`
+
+	// Advanced / Appearance
+	Font        *FontConfig     `json:"font,omitempty"`
+	BgColor     string          `json:"bg_color,omitempty"`   // e.g. "#FFFFFF" or "255,255,255"
+	TextColor   string          `json:"text_color,omitempty"`
+	MaxLength   int             `json:"max_length,omitempty"`
+	Marquee     bool            `json:"marquee,omitempty"`
+	ImageMode   string          `json:"image_mode,omitempty"` // e.g. "Ideal", "Stretch", "Zoom"
 
 	Children    []*Component    `json:"children,omitempty"` // For tree representation
 }
